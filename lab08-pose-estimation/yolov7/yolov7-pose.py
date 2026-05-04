@@ -13,7 +13,7 @@ def pose_video(frame):
     mapped_img = frame.copy()
     # Letterbox resizing.
     img = letterbox(frame, input_size, stride=64, auto=True)[0]
-    print(img.shape)
+    # print(img.shape) # Commented out to avoid terminal spam
     img_ = img.copy()
     # Convert the array to 4D.
     img = transforms.ToTensor()(img)
@@ -70,9 +70,7 @@ _ = model.float().eval()
 model.to(device)
 
 # Provide the list of paths to your chosen videos her
-videos = [
-        'skydiving',
-        'far-away']
+videos = ['walking-persons']
 
 file_name = videos[0] + '.mp4'
 vid_path = '../media/' + file_name
@@ -80,14 +78,17 @@ vid_path = '../media/' + file_name
 cap = cv2.VideoCapture(vid_path)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 ret, frame = cap.read()
+
+# Added check to avoid errors if video is not read properly
+if not ret:
+    print(f"Error: Could not read video from {vid_path}")
+    exit()
+
 h, w, _ = frame.shape
 
-# May need to change the w, h as letterbox function reshapes the image.
-#out = cv2.VideoWriter('./' + file_name + '_yolov7', 
-#                       cv2.VideoWriter_fourcc(*'mp4v'), 
-#                       fps, (w, h))
-
-out = cv2.VideoWriter(f"{save_name}_yolo7.avi",cv2.VideoWriter_fourcc('M','J','P','G'), 10, w,h)
+# Fixed variables and tuple format
+save_name = videos[0]
+out = cv2.VideoWriter(f"{save_name}_yolo7.avi",cv2.VideoWriter_fourcc('M','J','P','G'), 10, (w,h))
 
 #-------------------------------------------------------------------------------#
 
@@ -97,7 +98,7 @@ if __name__ == '__main__':
         ret, frame = cap.read()
         
         if not ret:
-            print('Unable to read frame. Exiting ..')
+            print('Finished reading video. Exiting ..')
             break
 
         img, fps_ = pose_video(frame)
@@ -109,7 +110,7 @@ if __name__ == '__main__':
         out.write(img[...,::-1])
         key = cv2.waitKey(1)
         if key == ord('q'):
-        	break
+            break
 
     cap.release()
     out.release()
